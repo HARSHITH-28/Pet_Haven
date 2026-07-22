@@ -20,6 +20,12 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 #Database Configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_pre_ping": True,
+    "pool_recycle": 300,
+    "pool_size": 5,
+    "max_overflow": 10,
+}
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 # Flask-Mail Configuration
@@ -2743,5 +2749,12 @@ def add_admin():
 
 # Run the app
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    socketio.run(app, host="0.0.0.0", port=port)
+    print("Reached __main__")
+
+    with app.app_context():
+        db.create_all()
+
+    print("About to start Flask")
+
+    port = int(os.environ.get("PORT", 5001))
+    app.run(host="0.0.0.0", port=port)
